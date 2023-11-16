@@ -1,3 +1,8 @@
+/**
+ * TestGUI class represents a GUI application for managing events and stadiums.
+ * Contributors: Albert Koesoema
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -536,4 +541,4 @@ public class TestGUI {
 		refundTicketsFrame.setVisible(true);
 	}
 	
-}
+} // end TestGUI
