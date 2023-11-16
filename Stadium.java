@@ -4,19 +4,15 @@ public class Stadium{
     private String stadiumName;
     private String stadiumLocation;
     private final int seatNum;
-    private boolean available;
     private ArrayList<Event> eventList = new ArrayList<Event>();
-    private int ticketCounter;
 
     public Stadium(String stadiumName, String stadiumLocation, int seatNum){
         this.stadiumName = stadiumName;
         this.stadiumLocation = stadiumLocation;
         this.seatNum = seatNum;
-        this.available = true;
-        this.ticketCounter = 0;
     }
 
-    public void addEvent(Event eventIn) {
+    public boolean addEvent(Event eventIn) {
         // Check for events with the same date
         boolean SameDate = false;
         for (Event prevEvent : eventList) {
@@ -27,14 +23,12 @@ public class Stadium{
         }
 
         if (SameDate) {
-            System.out.println("Failed to add Event! There is already an Event occurring on this date!");
+			return false;
         } 
 		else {
             eventList.add(eventIn);
-			ticketCounter++;
-			if (ticketCounter == seatNum)
-				available = false;
-            System.out.println("Event Added!");
+			eventIn.setTickets(seatNum);
+			return true;
         }
     }
 	
@@ -42,18 +36,16 @@ public class Stadium{
 		int indexToRemove = -1;
         for (int i = 0; i < eventList.size(); i++) {
 			Event existingEvent = eventList.get(i);
-			if (existingEvent.equals(eventIn)) {
+			if (existingEvent.getName().equals(eventIn.getName())) {
+				eventIn.setTickets(0);
 				indexToRemove = i;
 				break;
             }
         }
 
         if (indexToRemove != -1) {
-			if (ticketCounter == seatNum)
-				available = true;
-			ticketCounter--;
             eventList.remove(indexToRemove);
-            System.out.println("Event Removed!");
+            System.out.println("Event " + eventIn.getName() + " Removed!");
         } else {
             System.out.println("Event not found. Nothing to remove.");
         }
@@ -70,10 +62,6 @@ public class Stadium{
     public int getStadiumSeatNum(){
         return seatNum;
     }
-
-    public boolean checkAvailability(){
-        return available;
-    }
 	
 	public void setStadiumName(String nameIn){
 		stadiumName = nameIn;
@@ -81,10 +69,6 @@ public class Stadium{
 	
 	public void setStadiumLocation(String nameIn){
 		stadiumLocation = nameIn;
-	}
-	
-	public void setAvailability(boolean in){
-		available = in;
 	}
 	
 	public String toString() {
