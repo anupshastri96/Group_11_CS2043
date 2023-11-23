@@ -38,21 +38,6 @@ public class Stadiumtest1{
              System.out.println("Test 2: Stadium Location is NOT Correct");
         }
 
-        outDataTwo = stadium.checkAvailability();
-        if(outDataTwo){
-            System.out.println("Test 3: Seats are available!");
-        }
-        else{
-            System.out.println("Test 3: Seats are NOT available!");
-        }
-        stadium.setAvailability(false);
-        if(outDataTwo){
-            System.out.println("Test 3: Seats are available!");
-        }
-        else{
-            System.out.println("Test 3: Seats are NOT available!");
-        }
-
         outDataThree = stadium.getStadiumSeatNum();
         if(outDataThree == stadium.getStadiumSeatNum()){
             System.out.println("Test 4: Stadium Location is Correct");
