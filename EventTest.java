@@ -37,5 +37,81 @@ public class EventTest{
         else{
             System.out.println("Test1: Price is incorrect");
         }  
+		
+		if (test1.getTickets() == 0){
+			System.out.println("Test1: Tickets are correct");
+        }
+        else{
+            System.out.println("Test1: Tickets are incorrect");
+        } 
+		
+		test1.setName("name2");
+		
+		if (test1.getName().equals("name2")){
+        	System.out.println("Test1: setName is correct");
+        }
+        else{
+        	System.out.println("Test1: setName is incorrect");
+        }
+		
+		test1.setDate("Date2");
+		
+		if (test1.getDate().equals("Date2")){
+        	System.out.println("Test1: setDate is correct");
+        }
+        else{
+        	System.out.println("Test1: setDate is incorrect");
+        }
+		
+		test1.setDescription("description2");
+		
+		if (test1.getDescription().equals("description2")){
+        	System.out.println("Test1: setDescription is correct");
+        }
+        else{
+        	System.out.println("Test1: setDescription is incorrect");
+        }
+		
+		test1.setPrice(39.99);
+		
+		if (test1.getPrice() == 39.99){
+        	System.out.println("Test1: setPrice is correct");
+        }
+        else{
+        	System.out.println("Test1: setPrice is incorrect");
+        }
+		
+		test1.buyTickets(1); //buying tickets with no available tickets
+		
+		test1.refundTickets(1); //refunding tickets with no available tickets
+		
+		test1.setTickets(100);
+		
+		if (test1.getTickets() == 100){
+			System.out.println("Test1: setTickets is correct");
+        }
+        else{
+            System.out.println("Test1: setTickets is incorrect");
+        } 
+		
+		test1.buyTickets(1); //buying tickets (should work)
+		
+		test1.refundTickets(1); //refunding tickets (should work)
+		
+		test1.buyTickets(101); //attemting to buy more tickets thana available
+		
+		test1.refundTickets(101); //when no tickets have been sold
+		
+		test1.buyTickets(60); //buying 60 tickets (should work)
+		
+		test1.refundTickets(61); //attemting to refund tickets more than bought amount
+		
+		System.out.println(test1.toString());
+		
+		
+		
+		
+		
+		
     }
 }
