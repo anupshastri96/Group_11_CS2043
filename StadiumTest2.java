@@ -1,4 +1,4 @@
-public class StadiumTest {
+public class StadiumTest2 {
     public static void main(String[] args) {
         testAddEvent();
         testRemoveEvent();
