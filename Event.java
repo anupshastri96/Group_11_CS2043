@@ -3,6 +3,7 @@ public class Event{
 	private double price;
 	private final int EVENT_ID;
 	private int tickets, soldTickets;
+	private boolean availableTickets;
 		
 	public Event(int eventId, String name, String date, String description, double price){
 		this.name = name;
@@ -11,7 +12,8 @@ public class Event{
 		this.price = price;
 		EVENT_ID = eventId;
 		tickets = 0;
-		soldTickets = 0;
+		soldTickets =0;
+		availableTickets = false;
 	}
 	
 	public String getName(){
@@ -35,7 +37,11 @@ public class Event{
 	}
 	
 	public int getTickets(){
-		return tickets - soldTickets;
+		return tickets;
+	}
+	
+	public int getSoldTickets(){
+		return soldTickets;
 	}
 	
 	public void setName(String name){
@@ -58,6 +64,14 @@ public class Event{
 		tickets = ticketsIn;
 	}
 	
+	public void setSoldTickets(int soldTicketsIn){
+		soldTickets = soldTicketsIn;
+	}
+	
+	public boolean checkAvailability(){
+		return tickets !=0;
+	}
+	
 	public void buyTickets(int ticketsIn){
 		if(tickets == 0){
 			System.out.println("Error! Event is not registered to a Stadium");
@@ -71,7 +85,7 @@ public class Event{
 				System.out.println(ticketsIn + " tickets purchased!");
 			}
 			else {
-				System.out.println("Error! you are tring to purchase more than the number of available tickets");
+				System.out.println("Error! you are tring to purchase more than the number of"  							+	"available tickets");
 			}
 		}
 	}
@@ -89,7 +103,7 @@ public class Event{
 				System.out.println(ticketsIn + " tickets refunded");
 			}
 			else{
-				System.out.println("Error! You are trying to refund more than the number of tickets sold");
+				System.out.println("Error! You are trying to refund more than the number of " 										+ "tickets sold");
 			}
 		}
 	}

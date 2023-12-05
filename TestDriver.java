@@ -8,11 +8,20 @@ public class TestDriver{
 		
 		Stadium rogers = new Stadium("Roger's Centre","Toronto",100);
 		
+		ManageTickets ticketManager = new ManageTickets();
+		
 		rogers.addEvent(drake);
 		rogers.addEvent(bts);
 		rogers.addEvent(tSwift);
 		rogers.addEvent(newJeans);
 		rogers.addEvent(blackpink);
+		
+		ticketManager.buyTickets(drake, 50);
+		ticketManager.refundTickets(drake, 49);
+		
+		ticketManager.refundTickets(drake, 49);
+		
+		ticketManager.buyTickets(blackpink, 2);
 		
 		System.out.println(rogers.toString());
 	}
