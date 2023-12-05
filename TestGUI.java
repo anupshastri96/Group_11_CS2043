@@ -84,8 +84,8 @@ private static void createEvent() {
     createButton.addActionListener(e -> {
         // Assuming you have database credentials and connection URL
         String url = "jdbc:mysql://localhost:3306/cs2043";
-        String username = "ahadikoe";
-        String password = "Potatogun_0811307730";
+        String username = "username";
+        String password = "password";
 
         int uniqueId = eventList.size() + 1; // Generate unique ID
         String name = nameField.getText();
