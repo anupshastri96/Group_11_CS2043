@@ -1,12 +1,11 @@
-/**
- * TestGUI class represents a GUI application for managing events and stadiums.
- * Contributors: Albert Koesoema
- */
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class TestGUI {
     private static int uniqueId = 0;
@@ -40,10 +39,6 @@ public class TestGUI {
         removeButton.addActionListener(e -> removeEventFromStadium());
         panel.add(removeButton);
 		
-		JButton displayStadiumButton = new JButton("Display all events in the stadium");
-        displayStadiumButton.addActionListener(e -> displayEventsInStadium());
-        panel.add(displayStadiumButton);
-		
 		JButton displayEventButton = new JButton("Display all existing events");
         displayEventButton.addActionListener(e -> displayAllCreatedEvents());
         panel.add(displayEventButton);
@@ -63,95 +58,158 @@ public class TestGUI {
 		
     }
 
-    private static void createEvent() {
-		JFrame createEventFrame = new JFrame("Create Event");
-		createEventFrame.setSize(400, 300);
+    import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-		JPanel createEventPanel = new JPanel();
-		createEventPanel.setLayout(new GridLayout(6, 1));
+// Assume your Event and eventList are properly defined
 
-		JLabel nameLabel = new JLabel("Name of the event:");
-		JTextField nameField = new JTextField();
+private static void createEvent() {
+    JFrame createEventFrame = new JFrame("Create Event");
+    createEventFrame.setSize(400, 300);
 
-		JLabel dateLabel = new JLabel("Date of the event:");
-		JTextField dateField = new JTextField();
+    JPanel createEventPanel = new JPanel();
+    createEventPanel.setLayout(new GridLayout(6, 1));
 
-		JLabel descLabel = new JLabel("Description of the event:");
-		JTextField descField = new JTextField();
+    JLabel nameLabel = new JLabel("Name of the event:");
+    JTextField nameField = new JTextField();
 
-		JLabel priceLabel = new JLabel("Price of the event's ticket:");
-		JTextField priceField = new JTextField();
+    JLabel dateLabel = new JLabel("Date of the event:");
+    JTextField dateField = new JTextField();
 
-		JButton createButton = new JButton("Create Event");
+    JLabel descLabel = new JLabel("Description of the event:");
+    JTextField descField = new JTextField();
 
-		createButton.addActionListener(e -> {
-			int uniqueId = eventList.size() + 1; // Generate unique ID
-			String name = nameField.getText();
-			String date = dateField.getText();
-			String desc = descField.getText();
-			double price = Double.parseDouble(priceField.getText());
+    JLabel priceLabel = new JLabel("Price of the event's ticket:");
+    JTextField priceField = new JTextField();
 
-			eventList.add(new Event(uniqueId, name, date, desc, price));
-			JOptionPane.showMessageDialog(createEventFrame, "Event created successfully!");
-			createEventFrame.setVisible(false);
-		});
+    JButton createButton = new JButton("Create Event");
 
-		createEventPanel.add(nameLabel);
-		createEventPanel.add(nameField);
-		createEventPanel.add(dateLabel);
-		createEventPanel.add(dateField);
-		createEventPanel.add(descLabel);
-		createEventPanel.add(descField);
-		createEventPanel.add(priceLabel);
-		createEventPanel.add(priceField);
-		createEventPanel.add(createButton);
+    createButton.addActionListener(e -> {
+        // Assuming you have database credentials and connection URL
+        String url = "jdbc:mysql://localhost:3306/your_database";
+        String username = "your_username";
+        String password = "your_password";
 
-		createEventFrame.add(createEventPanel);
-		createEventFrame.setLocationRelativeTo(null);
-		createEventFrame.setVisible(true);
-	}
+        int uniqueId = eventList.size() + 1; // Generate unique ID
+        String name = nameField.getText();
+        String date = dateField.getText();
+        String desc = descField.getText();
+        double price = Double.parseDouble(priceField.getText());
+
+        // Add event to eventList
+        Event newEvent = new Event(uniqueId, name, date, desc, price);
+        eventList.add(newEvent);
+
+        // Add event to the database
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String insertQuery = "INSERT INTO events (eventId, eventName, eventDate, eventDesc, eventPrice) VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
+            preparedStatement.setInt(1, uniqueId);
+            preparedStatement.setString(2, name);
+            preparedStatement.setString(3, date);
+            preparedStatement.setString(4, desc);
+            preparedStatement.setDouble(5, price);
+
+            preparedStatement.executeUpdate();
+            JOptionPane.showMessageDialog(createEventFrame, "Event created successfully!");
+            createEventFrame.setVisible(false);
+        } catch (SQLException ex) {
+            // Handle database exceptions (e.g., connection error, SQL error)
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(createEventFrame, "Error creating event!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+
+    createEventPanel.add(nameLabel);
+    createEventPanel.add(nameField);
+    createEventPanel.add(dateLabel);
+    createEventPanel.add(dateField);
+    createEventPanel.add(descLabel);
+    createEventPanel.add(descField);
+    createEventPanel.add(priceLabel);
+    createEventPanel.add(priceField);
+    createEventPanel.add(createButton);
+
+    createEventFrame.add(createEventPanel);
+    createEventFrame.setLocationRelativeTo(null);
+    createEventFrame.setVisible(true);
+}
+
 
 	
-	private static void addEventToStadium() {
-		JFrame addEventFrame = new JFrame("Add Event to Stadium");
-		addEventFrame.setSize(300, 150);
+private static void addEventToStadium() {
+    JFrame addEventFrame = new JFrame("Add Event to Stadium");
+    addEventFrame.setSize(300, 150);
 
-		JPanel addEventPanel = new JPanel();
-		addEventPanel.setLayout(new GridLayout(3, 1));
+    JPanel addEventPanel = new JPanel();
+    addEventPanel.setLayout(new GridLayout(3, 1));
 
-		JLabel enterEventLabel = new JLabel("Which event would you like to add?");
-		JTextField nameField = new JTextField();
+    JLabel enterEventLabel = new JLabel("Which event would you like to add?");
+    JTextField nameField = new JTextField();
 
-		JButton addButton = new JButton("Add Event");
-		addButton.addActionListener(e -> {
-			String name = nameField.getText();
-			boolean Added = true;
+    JButton addButton = new JButton("Add Event");
+    addButton.addActionListener(e -> {
+        String name = nameField.getText();
 
-			for (Event event : eventList) {
-				if (event.getName().equals(name)) {
-					Added = stadium.addEvent(event);
-					break;
-				}
-			}
+        // Assuming eventManager, stadium, and database connection are properly instantiated
+        ManageEvent eventManager = new ManageEvent(); // Create ManageEvent instance
+        Stadium stadium = new Stadium(); // Create Stadium instance
 
-			if (Added) {
-				JOptionPane.showMessageDialog(addEventFrame, "Event added to stadium successfully!");
-			}
-			else{
-				JOptionPane.showMessageDialog(addEventFrame, "Error! Nothing was added.", "Error", JOptionPane.ERROR_MESSAGE);
-			}
+        boolean added = false;
 
-			addEventFrame.dispose(); // Close the frame after adding the event
-		});
+        for (Event event : eventList) {
+            if (event.getName().equals(name)) {
+                // Add event to the stadium in the database
+                added = eventManager.addEventToStadium(event, stadium);
 
-		addEventPanel.add(enterEventLabel);
-		addEventPanel.add(nameField);
-		addEventPanel.add(addButton);
+                if (added) {
+                    // Update stadium record in the database with the added event
+                    updateStadiumInDatabase(stadium);
+                    JOptionPane.showMessageDialog(addEventFrame, "Event added to stadium successfully!");
+                } else {
+                    JOptionPane.showMessageDialog(addEventFrame, "Error! Nothing was added.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                break;
+            }
+        }
 
-		addEventFrame.add(addEventPanel);
-		addEventFrame.setLocationRelativeTo(null);
-		addEventFrame.setVisible(true);
-	}
+        addEventFrame.dispose(); // Close the frame after adding the event
+    });
+
+    addEventPanel.add(enterEventLabel);
+    addEventPanel.add(nameField);
+    addEventPanel.add(addButton);
+
+    addEventFrame.add(addEventPanel);
+    addEventFrame.setLocationRelativeTo(null);
+    addEventFrame.setVisible(true);
+}
+
+// Method to update stadium record in the database with the added event
+private static void updateStadiumInDatabase(Stadium stadium) {
+    // Your database connection details
+    String url = "jdbc:mysql://localhost:3306/your_database";
+    String username = "your_username";
+    String password = "your_password";
+
+    try (Connection connection = DriverManager.getConnection(url, username, password)) {
+        String updateQuery = "UPDATE stadiums SET event_id = ? WHERE stadium_id = ?";
+        PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
+
+        // Assuming stadium object has methods to get event ID and stadium ID
+        preparedStatement.setInt(1, stadium.getEventId());
+        preparedStatement.setInt(2, stadium.getStadiumId());
+
+        preparedStatement.executeUpdate();
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+        // Handle database exceptions
+    }
+}
+
+
 	
 	private static void editEvent() {
 		JFrame editEventFrame = new JFrame("Edit Event");
@@ -177,221 +235,279 @@ public class TestGUI {
 	}
 	
 	private static void editEventName() {
-		JFrame editEventNameFrame = new JFrame("Edit Event Name");
-		editEventNameFrame.setSize(600, 200);
+    JFrame editEventNameFrame = new JFrame("Edit Event Name");
+    editEventNameFrame.setSize(600, 200);
 
-		JPanel editEventNamePanel = new JPanel();
-		editEventNamePanel.setLayout(new GridLayout(3, 1));
+    JPanel editEventNamePanel = new JPanel();
+    editEventNamePanel.setLayout(new GridLayout(3, 1));
 
-		JLabel nameLabel = new JLabel("Enter the name of the event you want to edit:");
-		JTextField eventNameField = new JTextField();
+    JLabel nameLabel = new JLabel("Enter the name of the event you want to edit:");
+    JTextField eventNameField = new JTextField();
 
-		JLabel newNameLabel = new JLabel("Enter the new name of the event:");
-		JTextField newEventNameField = new JTextField();
+    JLabel newNameLabel = new JLabel("Enter the new name of the event:");
+    JTextField newEventNameField = new JTextField();
 
-		JButton editButton = new JButton("Edit Name");
+    JButton editButton = new JButton("Edit Name");
 
-		editButton.addActionListener(e -> {
-			String name = eventNameField.getText();
-			String newName = newEventNameField.getText();
-			boolean eventFound = false;
+    editButton.addActionListener(e -> {
+        String name = eventNameField.getText();
+        String newName = newEventNameField.getText();
+        boolean eventFound = false;
 
-			for (Event event : eventList) {
-				if (event.getName().equals(name)) {
-					event.setName(newName);
-					JOptionPane.showMessageDialog(editEventNameFrame, "Event name updated successfully!");
-					eventFound = true;
-					break;
-				}
-			}
+        // Your database connection details
+        String url = "jdbc:mysql://localhost:3306/your_database";
+        String username = "your_username";
+        String password = "your_password";
 
-			if (!eventFound) {
-				JOptionPane.showMessageDialog(editEventNameFrame, "Event not found!", "Error", JOptionPane.ERROR_MESSAGE);
-			}
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            // Update query to edit event name based on the event name
+            String updateQuery = "UPDATE events SET event_name = ? WHERE event_name = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
 
-			editEventNameFrame.dispose(); // Close the frame after editing the event name
-		});
+            preparedStatement.setString(1, newName);
+            preparedStatement.setString(2, name);
 
-		editEventNamePanel.add(nameLabel);
-		editEventNamePanel.add(eventNameField);
-		editEventNamePanel.add(newNameLabel);
-		editEventNamePanel.add(newEventNameField);
-		editEventNamePanel.add(editButton);
+            int rowsUpdated = preparedStatement.executeUpdate();
 
-		editEventNameFrame.add(editEventNamePanel);
-		editEventNameFrame.setLocationRelativeTo(null);
-		editEventNameFrame.setVisible(true);
-	}
+            if (rowsUpdated > 0) {
+                JOptionPane.showMessageDialog(editEventNameFrame, "Event name updated successfully!");
+                eventFound = true;
+            } else {
+                JOptionPane.showMessageDialog(editEventNameFrame, "Event not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            // Handle database exceptions
+            JOptionPane.showMessageDialog(editEventNameFrame, "Error updating event name.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        if (eventFound) {
+            // Update the event name in eventList if the event was found and updated in the database
+            for (Event event : eventList) {
+                if (event.getName().equals(name)) {
+                    event.setName(newName);
+                    break;
+                }
+            }
+        }
+
+        editEventNameFrame.dispose(); // Close the frame after editing the event name
+    });
+
+    editEventNamePanel.add(nameLabel);
+    editEventNamePanel.add(eventNameField);
+    editEventNamePanel.add(newNameLabel);
+    editEventNamePanel.add(newEventNameField);
+    editEventNamePanel.add(editButton);
+
+    editEventNameFrame.add(editEventNamePanel);
+    editEventNameFrame.setLocationRelativeTo(null);
+    editEventNameFrame.setVisible(true);
+}
+
 	
 	private static void editEventDescription() {
-		JFrame editEventDescriptionFrame = new JFrame("Edit Event Description");
-		editEventDescriptionFrame.setSize(600, 200);
+    JFrame editEventDescriptionFrame = new JFrame("Edit Event Description");
+    editEventDescriptionFrame.setSize(600, 200);
 
-		JPanel editEventDescriptionPanel = new JPanel();
-		editEventDescriptionPanel.setLayout(new GridLayout(3, 1));
+    JPanel editEventDescriptionPanel = new JPanel();
+    editEventDescriptionPanel.setLayout(new GridLayout(3, 1));
 
-		JLabel nameLabel = new JLabel("Enter the name of the event you want to edit:");
-		JTextField eventNameField = new JTextField();
+    JLabel nameLabel = new JLabel("Enter the name of the event you want to edit:");
+    JTextField eventNameField = new JTextField();
 
-		JLabel newDescLabel = new JLabel("Enter the new description of the event:");
-		JTextField newDescField = new JTextField();
+    JLabel newDescLabel = new JLabel("Enter the new description of the event:");
+    JTextField newDescField = new JTextField();
 
-		JButton editButton = new JButton("Edit Description");
+    JButton editButton = new JButton("Edit Description");
 
-		editButton.addActionListener(e -> {
-			String name = eventNameField.getText();
-			String newDescription = newDescField.getText();
-			boolean eventFound = false;
+    editButton.addActionListener(e -> {
+        String name = eventNameField.getText();
+        String newDescription = newDescField.getText();
+        boolean eventFound = false;
 
-			for (Event event : eventList) {
-				if (event.getName().equals(name)) {
-					event.setDescription(newDescription);
-					JOptionPane.showMessageDialog(editEventDescriptionFrame, "Event description updated successfully!");
-					eventFound = true;
-					break;
-				}
-			}
+        // Your database connection details
+        String url = "jdbc:mysql://localhost:3306/your_database";
+        String username = "your_username";
+        String password = "your_password";
 
-			if (!eventFound) {
-				JOptionPane.showMessageDialog(editEventDescriptionFrame, "Event not found!", "Error", JOptionPane.ERROR_MESSAGE);
-			}
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            // Update query to edit event description based on the event name
+            String updateQuery = "UPDATE events SET event_description = ? WHERE event_name = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
 
-			editEventDescriptionFrame.dispose(); // Close the frame after editing the event description
-		});
+            preparedStatement.setString(1, newDescription);
+            preparedStatement.setString(2, name);
 
-		editEventDescriptionPanel.add(nameLabel);
-		editEventDescriptionPanel.add(eventNameField);
-		editEventDescriptionPanel.add(newDescLabel);
-		editEventDescriptionPanel.add(newDescField);
-		editEventDescriptionPanel.add(editButton);
+            int rowsUpdated = preparedStatement.executeUpdate();
 
-		editEventDescriptionFrame.add(editEventDescriptionPanel);
-		editEventDescriptionFrame.setLocationRelativeTo(null);
-		editEventDescriptionFrame.setVisible(true);
-	}
+            if (rowsUpdated > 0) {
+                JOptionPane.showMessageDialog(editEventDescriptionFrame, "Event description updated successfully!");
+                eventFound = true;
+            } else {
+                JOptionPane.showMessageDialog(editEventDescriptionFrame, "Event not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            // Handle database exceptions
+            JOptionPane.showMessageDialog(editEventDescriptionFrame, "Error updating event description.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        if (eventFound) {
+            // Update the event description in eventList if the event was found and updated in the database
+            for (Event event : eventList) {
+                if (event.getName().equals(name)) {
+                    event.setDescription(newDescription);
+                    break;
+                }
+            }
+        }
+
+        editEventDescriptionFrame.dispose(); // Close the frame after editing the event description
+    });
+
+    editEventDescriptionPanel.add(nameLabel);
+    editEventDescriptionPanel.add(eventNameField);
+    editEventDescriptionPanel.add(newDescLabel);
+    editEventDescriptionPanel.add(newDescField);
+    editEventDescriptionPanel.add(editButton);
+
+    editEventDescriptionFrame.add(editEventDescriptionPanel);
+    editEventDescriptionFrame.setLocationRelativeTo(null);
+    editEventDescriptionFrame.setVisible(true);
+}
+
 	
 	private static void editEventPrice() {
-		JFrame editEventPriceFrame = new JFrame("Edit Event Price");
-		editEventPriceFrame.setSize(600, 200);
+    JFrame editEventPriceFrame = new JFrame("Edit Event Price");
+    editEventPriceFrame.setSize(600, 200);
 
-		JPanel editEventPricePanel = new JPanel();
-		editEventPricePanel.setLayout(new GridLayout(3, 1));
+    JPanel editEventPricePanel = new JPanel();
+    editEventPricePanel.setLayout(new GridLayout(3, 1));
 
-		JLabel nameLabel = new JLabel("Enter the name of the event you want to edit:");
-		JTextField eventNameField = new JTextField();
+    JLabel nameLabel = new JLabel("Enter the name of the event you want to edit:");
+    JTextField eventNameField = new JTextField();
 
-		JLabel newPriceLabel = new JLabel("Enter the new price of the event:");
-		JTextField newPriceField = new JTextField();
+    JLabel newPriceLabel = new JLabel("Enter the new price of the event:");
+    JTextField newPriceField = new JTextField();
 
-		JButton editButton = new JButton("Edit Price");
+    JButton editButton = new JButton("Edit Price");
 
-		editButton.addActionListener(e -> {
-			String name = eventNameField.getText();
-			double newPrice = Double.parseDouble(newPriceField.getText());
-			boolean eventFound = false;
+    editButton.addActionListener(e -> {
+        String name = eventNameField.getText();
+        double newPrice = Double.parseDouble(newPriceField.getText());
+        boolean eventFound = false;
 
-			for (Event event : eventList) {
-				if (event.getName().equals(name)) {
-					event.setPrice(newPrice);
-					JOptionPane.showMessageDialog(editEventPriceFrame, "Event price updated successfully!");
-					eventFound = true;
-					break;
-				}
-			}
+        // Your database connection details
+        String url = "jdbc:mysql://localhost:3306/your_database";
+        String username = "your_username";
+        String password = "your_password";
 
-			if (!eventFound) {
-				JOptionPane.showMessageDialog(editEventPriceFrame, "Event not found!", "Error", JOptionPane.ERROR_MESSAGE);
-			}
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            // Update query to edit event price based on the event name
+            String updateQuery = "UPDATE events SET event_price = ? WHERE event_name = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
 
-			editEventPriceFrame.dispose(); // Close the frame after editing the event price
-		});
+            preparedStatement.setDouble(1, newPrice);
+            preparedStatement.setString(2, name);
 
-		editEventPricePanel.add(nameLabel);
-		editEventPricePanel.add(eventNameField);
-		editEventPricePanel.add(newPriceLabel);
-		editEventPricePanel.add(newPriceField);
-		editEventPricePanel.add(editButton);
+            int rowsUpdated = preparedStatement.executeUpdate();
 
-		editEventPriceFrame.add(editEventPricePanel);
-		editEventPriceFrame.setLocationRelativeTo(null);
-		editEventPriceFrame.setVisible(true);
-	}
+            if (rowsUpdated > 0) {
+                JOptionPane.showMessageDialog(editEventPriceFrame, "Event price updated successfully!");
+                eventFound = true;
+            } else {
+                JOptionPane.showMessageDialog(editEventPriceFrame, "Event not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            // Handle database exceptions
+            JOptionPane.showMessageDialog(editEventPriceFrame, "Error updating event price.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        if (eventFound) {
+            // Update the event price in eventList if the event was found and updated in the database
+            for (Event event : eventList) {
+                if (event.getName().equals(name)) {
+                    event.setPrice(newPrice);
+                    break;
+                }
+            }
+        }
+
+        editEventPriceFrame.dispose(); // Close the frame after editing the event price
+    });
+
+    editEventPricePanel.add(nameLabel);
+    editEventPricePanel.add(eventNameField);
+    editEventPricePanel.add(newPriceLabel);
+    editEventPricePanel.add(newPriceField);
+    editEventPricePanel.add(editButton);
+
+    editEventPriceFrame.add(editEventPricePanel);
+    editEventPriceFrame.setLocationRelativeTo(null);
+    editEventPriceFrame.setVisible(true);
+}
+
 
 	private static void removeEventFromStadium() {
-		JFrame removeEventFrame = new JFrame("Remove Event from Stadium");
-		removeEventFrame.setSize(300, 150);
+    JFrame removeEventFrame = new JFrame("Remove Event from Stadium");
+    removeEventFrame.setSize(300, 150);
 
-		JPanel removeEventPanel = new JPanel();
-		removeEventPanel.setLayout(new GridLayout(2, 1));
+    JPanel removeEventPanel = new JPanel();
+    removeEventPanel.setLayout(new GridLayout(2, 1));
 
-		JLabel enterNameLabel = new JLabel("Insert the name of the event you want to remove:");
-		JTextField nameField = new JTextField();
+    JLabel enterNameLabel = new JLabel("Insert the name of the event you want to remove:");
+    JTextField nameField = new JTextField();
 
-		JButton removeButton = new JButton("Remove Event");
-		removeButton.addActionListener(e -> {
-			String name = nameField.getText();
-			boolean eventRemoved = false;
+    JButton removeButton = new JButton("Remove Event");
+    removeButton.addActionListener(e -> {
+        String name = nameField.getText();
+        boolean eventRemoved = false;
 
-			for (Event event : eventList) {
-				if (event.getName().equals(name)) {
-					stadium.removeEvent(event);
-					eventRemoved = true;
-					JOptionPane.showMessageDialog(removeEventFrame, "Event removed from stadium successfully!");
-					break;
-				}
-			}
-			
-			int indexToRemove = -1;
-			for (int i = 0; i < eventList.size(); i++) {
-				Event existingEvent = eventList.get(i);
-				if (existingEvent.getName().equals(name)) {
-					indexToRemove = i;
-					break;
-				}
-			}
+        // Your database connection details
+        String url = "jdbc:mysql://localhost:3306/your_database";
+        String username = "your_username";
+        String password = "your_password";
 
-			if (indexToRemove != -1) {
-				eventList.remove(indexToRemove);
-			}
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            // Delete query to remove event from the database based on the event name
+            String deleteQuery = "DELETE FROM events WHERE event_name = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery);
 
-			if (!eventRemoved) {
-				JOptionPane.showMessageDialog(removeEventFrame, "Event not found!", "Error", JOptionPane.ERROR_MESSAGE);
-			}
+            preparedStatement.setString(1, name);
 
-			removeEventFrame.dispose(); // Close the frame after removing the event
-		});
+            int rowsDeleted = preparedStatement.executeUpdate();
 
-		removeEventPanel.add(enterNameLabel);
-		removeEventPanel.add(nameField);
-		removeEventPanel.add(removeButton);
+            if (rowsDeleted > 0) {
+                eventRemoved = true;
+                JOptionPane.showMessageDialog(removeEventFrame, "Event removed from stadium successfully!");
+            } else {
+                JOptionPane.showMessageDialog(removeEventFrame, "Event not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            // Handle database exceptions
+            JOptionPane.showMessageDialog(removeEventFrame, "Error removing event from stadium.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
 
-		removeEventFrame.add(removeEventPanel);
-		removeEventFrame.setLocationRelativeTo(null);
-		removeEventFrame.setVisible(true);
-	}
-	
-	private static void displayEventsInStadium() {
-		JFrame displayEventsFrame = new JFrame("Events in Stadium");
-		displayEventsFrame.setSize(400, 300);
+        if (eventRemoved) {
+            // Remove the event from eventList if the event was successfully removed from the database
+            eventList.removeIf(event -> event.getName().equals(name));
+        }
 
-		JPanel displayEventsPanel = new JPanel();
-		displayEventsPanel.setLayout(new BorderLayout());
+        removeEventFrame.dispose(); // Close the frame after removing the event
+    });
 
-		JTextArea eventsTextArea = new JTextArea();
-		eventsTextArea.setEditable(false);
-		JScrollPane scrollPane = new JScrollPane(eventsTextArea);
+    removeEventPanel.add(enterNameLabel);
+    removeEventPanel.add(nameField);
+    removeEventPanel.add(removeButton);
 
-		StringBuilder displayText = new StringBuilder();
-		displayText.append("Displaying Events in the stadium:\n");
-		displayText.append(stadium.toString());
-		eventsTextArea.setText(displayText.toString());
+    removeEventFrame.add(removeEventPanel);
+    removeEventFrame.setLocationRelativeTo(null);
+    removeEventFrame.setVisible(true);
+}
 
-		displayEventsPanel.add(scrollPane, BorderLayout.CENTER);
-
-		displayEventsFrame.add(displayEventsPanel);
-		displayEventsFrame.setLocationRelativeTo(null);
-		displayEventsFrame.setVisible(true);
-	}
 	
 	private static void displayAllCreatedEvents() {
 		JFrame displayAllEventsFrame = new JFrame("All Created Events");
@@ -420,6 +536,7 @@ public class TestGUI {
 	}
 	
 	private static void purchaseEventTickets() {
+		ManageTickets ticketManager = new ManageTickets();
 		JFrame purchaseTicketsFrame = new JFrame("Purchase Event Tickets");
 		purchaseTicketsFrame.setSize(400, 400);
 
@@ -452,7 +569,7 @@ public class TestGUI {
 						try {
 							int input = Integer.parseInt(inputStr);
 							if (input > 0 && input <= ticketsAvailable) {
-								event.buyTickets(input);
+								ticketManager.buyTickets(event, input);
 								resultTextArea.append("Tickets purchased successfully!");
 							} else {
 								resultTextArea.append("Invalid number of tickets.");
@@ -481,6 +598,7 @@ public class TestGUI {
 	}
 
 	private static void refundEventTickets() {
+		ManageTickets ticketManager = new ManageTickets();
 		JFrame refundTicketsFrame = new JFrame("Refund Event Tickets");
 		refundTicketsFrame.setSize(400, 400);
 
@@ -502,18 +620,18 @@ public class TestGUI {
 			for (Event event : eventList) {
 				if (event.getName().equals(name)) {
 					eventFound = true;
-					int ticketsAvailable = event.getTickets();
+					int ticketsSold = event.getSoldTickets();
 					double pricePerTicket = event.getPrice();
 
-					resultTextArea.setText("Tickets Available: " + ticketsAvailable + "\n");
+					resultTextArea.setText("Sold Tickets: " + ticketsSold + "\n");
 					resultTextArea.append("Price per ticket: " + pricePerTicket + "\n");
 
 					String inputStr = JOptionPane.showInputDialog(refundTicketsFrame, "Enter the number of tickets you would like to refund:");
 					if (inputStr != null) {
 						try {
 							int input = Integer.parseInt(inputStr);
-							if (input > 0 && input <= ticketsAvailable) {
-								event.refundTickets(input);
+							if (input > 0 && input <= ticketsSold) {
+								ticketManager.refundTickets(event, input);
 								resultTextArea.append("Tickets refunded successfully!");
 							} else {
 								resultTextArea.append("Invalid number of tickets.");
@@ -541,4 +659,4 @@ public class TestGUI {
 		refundTicketsFrame.setVisible(true);
 	}
 	
-} // end TestGUI
+}
